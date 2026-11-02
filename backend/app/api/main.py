@@ -61,6 +61,7 @@ class CreateVideoRequest(BaseModel):
     watermark: bool = False
     preview: bool = False
     target_duration: float = 60.0
+    openai_api_key: Optional[str] = None
 
 
 class AnalyzeVideoRequest(BaseModel):
@@ -153,6 +154,9 @@ def list_renders():
 @app.post("/api/v1/create-video")
 def create_video_endpoint(req: CreateVideoRequest):
     """Generate a broadcast video from text/script."""
+    if req.openai_api_key and len(req.openai_api_key) > 5:
+        os.environ["OPENAI_API_KEY"] = req.openai_api_key
+
     project_id = f"proj_{uuid.uuid4().hex[:8]}"
     out_name = f"{project_id}_render.mp4"
     out_path = str(renders_dir / out_name)

@@ -161,8 +161,31 @@
 
                     <!-- Prompt Input -->
                     <div>
-                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">ভিডিও টপিক বা স্ক্রিপ্ট</label>
-                        <textarea id="create-prompt" rows="4" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-sky-500 transition" placeholder="যেমন: কৃত্রিম বুদ্ধিমত্তা কীভাবে ফ্রিল্যান্সিং ও কাজের ধারা বদলে দিচ্ছে?"></textarea>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">ভিডিও টপিক বা স্ক্রিপ্ট</label>
+                            <span class="text-[11px] text-sky-400 cursor-pointer hover:underline" onclick="toggleEngineSettings()">⚙️ এআই ইঞ্জিন ও এপিআই কি সেটিংস</span>
+                        </div>
+                        <textarea id="create-prompt" rows="4" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-sky-500 transition" placeholder="যেমন: Create a 3D animated nursery rhyme video about farm animals..."></textarea>
+                    </div>
+
+                    <!-- Collapsible Engine Settings -->
+                    <div id="engine-settings-box" class="hidden p-3.5 bg-slate-950/80 rounded-xl border border-sky-900/50 space-y-3 text-xs">
+                        <div class="font-bold text-sky-400 flex items-center gap-1.5">
+                            <i data-lucide="cpu" class="w-4 h-4"></i> এআই ভিজ্যুয়াল জেনারেশন মোড
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-slate-400 mb-1">ভিজ্যুয়াল ইঞ্জিন প্রোভাইডার</label>
+                                <select id="create-engine-choice" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-white">
+                                    <option value="pollinations" selected>ফ্রি এআই ইঞ্জিন (Pollinations / Flux)</option>
+                                    <option value="openai">OpenAI DALL-E 3 (Ultra 3D Pixar / CoComelon কোয়ালিটি)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-slate-400 mb-1">OpenAI API Key (ঐচ্ছিক - আনলিমিটেড 4K এর জন্য)</label>
+                                <input type="password" id="create-api-key" placeholder="sk-..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-sky-500">
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Config Row -->
@@ -494,6 +517,11 @@
             }
         }
 
+        function toggleEngineSettings() {
+            const box = document.getElementById('engine-settings-box');
+            box.classList.toggle('hidden');
+        }
+
         async function startCreateVideo() {
             const prompt = document.getElementById('create-prompt').value.trim();
             if (!prompt) {
@@ -510,6 +538,9 @@
             progress.classList.remove('hidden');
             progText.innerText = 'ধাপ ১/৪: স্ক্রিপ্ট বিশ্লেষণ ও ক্যারেক্টার স্টোরিবোর্ড প্রস্তুত হচ্ছে...';
 
+            const apiKeyInput = document.getElementById('create-api-key');
+            const apiKey = apiKeyInput ? apiKeyInput.value.trim() : '';
+
             const payload = {
                 prompt: prompt,
                 language: document.getElementById('create-lang').value,
@@ -517,7 +548,8 @@
                 preset_name: document.getElementById('create-preset').value,
                 watermark: document.getElementById('create-watermark').checked,
                 preview: document.getElementById('create-preview').checked,
-                target_duration: parseFloat(document.getElementById('create-duration').value || '60')
+                target_duration: parseFloat(document.getElementById('create-duration').value || '60'),
+                openai_api_key: apiKey || null
             };
 
             // Progress ticker
