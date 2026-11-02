@@ -171,19 +171,38 @@
                     <!-- Collapsible Engine Settings -->
                     <div id="engine-settings-box" class="hidden p-3.5 bg-slate-950/80 rounded-xl border border-sky-900/50 space-y-3 text-xs">
                         <div class="font-bold text-sky-400 flex items-center gap-1.5">
-                            <i data-lucide="cpu" class="w-4 h-4"></i> এআই ভিজ্যুয়াল জেনারেশন মোড
+                            <i data-lucide="cpu" class="w-4 h-4"></i> ৩ডি ভিজ্যুয়াল ও মোশন ভিডিও ইঞ্জিন সেটিংস
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-slate-400 mb-1">ভিজ্যুয়াল ইঞ্জিন প্রোভাইডার</label>
                                 <select id="create-engine-choice" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-white">
-                                    <option value="pollinations" selected>ফ্রি এআই ইঞ্জিন (Pollinations / Flux)</option>
+                                    <option value="pollinations" selected>ফ্রি এআই ইঞ্জিন (Pollinations / Flux / Procedural)</option>
                                     <option value="openai">OpenAI DALL-E 3 (Ultra 3D Pixar / CoComelon কোয়ালিটি)</option>
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-slate-400 mb-1">OpenAI API Key (ঐচ্ছিক - আনলিমিটেড 4K এর জন্য)</label>
+                                <label class="block text-slate-400 mb-1">OpenAI API Key (ঐচ্ছিক - 4K পিক্সার কোয়ালিটি)</label>
                                 <input type="password" id="create-api-key" placeholder="sk-..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-sky-500">
+                            </div>
+                        </div>
+
+                        <!-- 3D Motion Generation Row -->
+                        <div class="pt-2 border-t border-slate-800/80 space-y-2">
+                            <label class="flex items-center gap-2 cursor-pointer font-semibold text-emerald-400">
+                                <input type="checkbox" id="create-motion-toggle" checked class="rounded border-slate-700 bg-slate-950 text-emerald-500">
+                                <span>ট্রু ৩ডি মোশন ভিডিও ইঞ্জিন সক্রিয় রাখুন (True 3D Animated Video Clips)</span>
+                            </label>
+                            <p class="text-[11px] text-slate-400">স্থির ছবির বদলে প্রতিটি দৃশ্যে ৫-১০ সেকেন্ডের বাস্তব ৩ডি মুভিং ভিডিও ক্লিপ তৈরি হবে (Kling / Luma অথবা জিরো-কস্ট ২.৫ডি প্যারালাক্স ইঞ্জিন)।</p>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                                <div>
+                                    <label class="block text-slate-400 mb-1">Luma Dream Machine Key (ঐচ্ছিক)</label>
+                                    <input type="password" id="create-luma-key" placeholder="luma-..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-sky-500">
+                                </div>
+                                <div>
+                                    <label class="block text-slate-400 mb-1">Kling AI API Key (ঐচ্ছিক)</label>
+                                    <input type="password" id="create-kling-key" placeholder="kling-..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-white focus:outline-none focus:border-sky-500">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -540,6 +559,11 @@
 
             const apiKeyInput = document.getElementById('create-api-key');
             const apiKey = apiKeyInput ? apiKeyInput.value.trim() : '';
+            const lumaKeyInput = document.getElementById('create-luma-key');
+            const lumaKey = lumaKeyInput ? lumaKeyInput.value.trim() : '';
+            const klingKeyInput = document.getElementById('create-kling-key');
+            const klingKey = klingKeyInput ? klingKeyInput.value.trim() : '';
+            const motionToggle = document.getElementById('create-motion-toggle');
 
             const payload = {
                 prompt: prompt,
@@ -549,18 +573,21 @@
                 watermark: document.getElementById('create-watermark').checked,
                 preview: document.getElementById('create-preview').checked,
                 target_duration: parseFloat(document.getElementById('create-duration').value || '60'),
-                openai_api_key: apiKey || null
+                openai_api_key: apiKey || null,
+                enable_video_motion: motionToggle ? motionToggle.checked : true,
+                luma_api_key: lumaKey || null,
+                kling_api_key: klingKey || null
             };
 
             // Progress ticker
             const timer1 = setTimeout(() => {
-                progText.innerText = 'ধাপ ২/৪: চরিত্রের ধারাবাহিকতা বজায় রেখে 3D Pixar সিন ইমেজ তৈরি হচ্ছে...';
+                progText.innerText = 'ধাপ ২/৪: চরিত্রের ধারাবাহিকতা বজায় রেখে ৩ডি কীফ্রেম ডিজাইন হচ্ছে...';
             }, 2500);
             const timer2 = setTimeout(() => {
-                progText.innerText = 'ধাপ ৩/৪: মায়াবী ও রিয়ালিস্টিক ভয়েসওভার এবং লুল্লাবাই ট্র্যাক সিঙ্ক হচ্ছে...';
+                progText.innerText = 'ধাপ ৩/৪: ইমেজ-টু-ভিডিও ইঞ্জিন দিয়ে রিয়াল ৩ডি মোশন অ্যানিমেশন রেন্ডার হচ্ছে...';
             }, 6000);
             const timer3 = setTimeout(() => {
-                progText.innerText = 'ধাপ ৪/৪: FFmpeg ব্রডকাস্ট রেন্ডারিং ও -14.0 LUFS মাস্টারিং চলছে...';
+                progText.innerText = 'ধাপ ৪/৪: মায়াবী ভয়েসওভার, লুল্লাবাই মিউজিক ও -14.0 LUFS মাস্টারিং চলছে...';
             }, 12000);
 
             try {

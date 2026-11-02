@@ -62,6 +62,9 @@ class CreateVideoRequest(BaseModel):
     preview: bool = False
     target_duration: float = 60.0
     openai_api_key: Optional[str] = None
+    enable_video_motion: bool = True
+    luma_api_key: Optional[str] = None
+    kling_api_key: Optional[str] = None
 
 
 class AnalyzeVideoRequest(BaseModel):
@@ -172,7 +175,10 @@ def create_video_endpoint(req: CreateVideoRequest):
         target_duration=req.target_duration,
         output_path=out_path,
         brand_kit=brand,
-        preview_mode=req.preview
+        preview_mode=req.preview,
+        enable_video_motion=req.enable_video_motion,
+        luma_api_key=req.luma_api_key,
+        kling_api_key=req.kling_api_key
     )
 
     return {

@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - Phase 8: True 3D Video Motion Engine & AI Video Providers - 2026-11-02
+
+### Added
+- **AI Video Generation Engine (`backend/app/providers/video_gen/`)**:
+  - `VideoGenProvider`: Unified interface converting still keyframes into real flowing 3D animation video clips (`.mp4`).
+  - `ProceduralMotionVideoProvider`: High-performance zero-cost 2.5D parallax and camera dolly engine that transforms keyframe scenes into dynamic 30fps moving video segments.
+  - `LumaDreamMachineProvider`: Native integration with Luma Dream Machine API for Hollywood/Pixar grade 3D character motion.
+  - `KlingVideoProvider`: Native integration with Kling AI Image-to-Video API for complex physics and character movement.
+- **Dynamic Multi-Subject Fallback Illustrator**: Replaces hardcoded duck drawings with a context-aware scene illustrator rendering red rustic barns, horses, toddlers (Tuni), meadows, rain clouds, and sunsets dynamically.
+- **DALL-E 3 & Custom Engine Settings in Web UI**:
+  - Direct OpenAI API key configuration in the Web UI for ultra-sharp 4K Pixar 3D imagery.
+  - One-click toggle for True 3D Motion Video clips.
+  - Luma Dream Machine and Kling AI API key inputs.
+- **Automated Test Suite**: Added `backend/tests/test_phase8_video_gen.py` bringing total passing test suite to 33/33 tests (100% success).
+
 ## [0.7.0] - Phase 6 & Phase 7: Web UI, Live API & Containerization - 2026-11-02
 
 ### Added

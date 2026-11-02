@@ -28,6 +28,9 @@ from backend.app.providers.tts.mock_tts_provider import MockTTSProvider
 from backend.app.providers.image.base import ImageGenProvider
 from backend.app.providers.image.generative_image_provider import GenerativeImageProvider
 from backend.app.providers.image.mock_image_provider import MockImageGenProvider
+from backend.app.providers.video_gen.base import VideoGenProvider
+from backend.app.providers.video_gen.procedural_motion_provider import ProceduralMotionVideoProvider
+from backend.app.providers.video_gen.manager import get_video_gen_provider
 from backend.app.presets.manager import preset_manager
 from backend.app.models.brand import BrandKit
 from backend.app.core.cost_tracker import CostAndAttributionTracker, CostItem, AttributionRecord
@@ -42,11 +45,13 @@ class CreateVideoPipeline:
         self,
         llm_provider: Optional[LLMProvider] = None,
         tts_provider: Optional[TTSProvider] = None,
-        image_provider: Optional[ImageGenProvider] = None
+        image_provider: Optional[ImageGenProvider] = None,
+        video_gen_provider: Optional[VideoGenProvider] = None
     ):
         self.llm = llm_provider or SmartScriptEngine()
         self.tts = tts_provider or EdgeTTSProvider()
         self.image_gen = image_provider or GenerativeImageProvider()
+        self.video_gen = video_gen_provider or ProceduralMotionVideoProvider()
 
     def run(
         self,
@@ -61,6 +66,9 @@ class CreateVideoPipeline:
         brand_kit: Optional[BrandKit] = None,
         preview_mode: bool = False,
         generate_thumbnail: bool = True,
+        enable_video_motion: bool = True,
+        luma_api_key: Optional[str] = None,
+        kling_api_key: Optional[str] = None,
         job_id: Optional[str] = None
     ) -> Dict[str, Any]:
         """Execute the end-to-end creation pipeline synchronously."""
@@ -76,6 +84,9 @@ class CreateVideoPipeline:
             brand_kit=brand_kit,
             preview_mode=preview_mode,
             generate_thumbnail=generate_thumbnail,
+            enable_video_motion=enable_video_motion,
+            luma_api_key=luma_api_key,
+            kling_api_key=kling_api_key,
             job_id=job_id
         ))
 
@@ -92,6 +103,9 @@ class CreateVideoPipeline:
         brand_kit: Optional[BrandKit] = None,
         preview_mode: bool = False,
         generate_thumbnail: bool = True,
+        enable_video_motion: bool = True,
+        luma_api_key: Optional[str] = None,
+        kling_api_key: Optional[str] = None,
         job_id: Optional[str] = None
     ) -> Dict[str, Any]:
         settings.init_directories()
@@ -218,10 +232,37 @@ class CreateVideoPipeline:
                     width=width,
                     height=height
                 )
-                chosen_visuals.append(gen_res.image_path)
+
+                if enable_video_motion:
+                    motion_vid_path = str(img_dir / f"scene_{idx+1:02d}_motion.mp4")
+                    scene_dur = scene_audio_results[idx][1] if idx < len(scene_audio_results) else 5.0
+                    video_provider = get_video_gen_provider(
+                        luma_api_key=luma_api_key,
+                        kling_api_key=kling_api_key
+                    )
+                    motion_res = await video_provider.animate_image_to_video(
+                        image_path=gen_res.image_path,
+                        motion_prompt=scene.visual_intent,
+                        duration=max(3.0, scene_dur),
+                        output_path=motion_vid_path,
+                        aspect_ratio=aspect_ratio,
+                        width=width,
+                        height=height
+                    )
+                    chosen_visuals.append(motion_res.video_path)
+                    cost_tracker.record_cost(CostItem(
+                        service="video_gen",
+                        provider=motion_res.provider_name,
+                        units=round(motion_res.duration_seconds, 1),
+                        unit_name="seconds",
+                        cost_usd=motion_res.cost_usd
+                    ))
+                else:
+                    chosen_visuals.append(gen_res.image_path)
+
                 cost_tracker.record_attribution(AttributionRecord(
                     asset_name=f"Scene {idx+1} Graphic",
-                    asset_type="image",
+                    asset_type="video" if enable_video_motion else "image",
                     source_url_or_provider=gen_res.provider_name,
                     license_type=gen_res.license_type,
                     attribution_text=gen_res.attribution or ""
@@ -236,9 +277,10 @@ class CreateVideoPipeline:
         visual_clips = []
         scene_start_marker = 0.0
         for idx, (audio_p, dur) in enumerate(scene_audio_results):
-            chosen_img = chosen_visuals[idx % len(chosen_visuals)]
+            chosen_media = chosen_visuals[idx % len(chosen_visuals)]
+            is_vid = any(chosen_media.lower().endswith(ext) for ext in [".mp4", ".mov", ".mkv"])
             kb = None
-            if preset.visual.ken_burns_enabled:
+            if not is_vid and preset.visual.ken_burns_enabled:
                 kb = KenBurnsEffect(
                     start_scale=1.0,
                     end_scale=1.08,
@@ -247,19 +289,20 @@ class CreateVideoPipeline:
 
             visual_clips.append(Clip(
                 id=f"vis_clip_{idx+1}",
-                source_path=chosen_img,
+                source_path=chosen_media,
                 source_in=0.0,
                 source_out=dur,
                 timeline_start=scene_start_marker,
                 timeline_end=scene_start_marker + dur,
-                transform=Transform(ken_burns=kb)
+                transform=Transform(ken_burns=kb) if kb else None
             ))
             scene_start_marker += dur
 
+        has_videos = any(c.source_path.lower().endswith((".mp4", ".mov", ".mkv")) for c in visual_clips)
         visual_track = Track(
             id="track_visual_main",
             name="Main Storyboard Visuals",
-            track_type=TrackType.IMAGE,
+            track_type=TrackType.VIDEO if has_videos else TrackType.IMAGE,
             z_index=0,
             clips=visual_clips
         )
