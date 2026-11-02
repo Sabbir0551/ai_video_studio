@@ -1,0 +1,32 @@
+{
+  "name": "clean_corporate",
+  "description": "Polished, balanced 16:9 explainer style for presentations and professional lessons",
+  "aspect_ratio": "16:9",
+  "fps": 30,
+  "visual": {
+    "ken_burns_enabled": true,
+    "default_transition": "dissolve",
+    "transition_duration": 0.5,
+    "color_grading_preset": "neutral_clean"
+  },
+  "audio": {
+    "target_lufs": -14.0,
+    "true_peak": -1.0,
+    "music_volume": 0.15,
+    "music_ducking_reduction_db": -12.0,
+    "music_ducking_threshold_db": -24.0
+  },
+  "caption": {
+    "font_name": "Noto Sans Bengali",
+    "font_size": 52,
+    "primary_color": "&H00FFFFFF",
+    "outline_color": "&H00000000",
+    "back_color": "&H80000000",
+    "bold": true,
+    "outline_width": 3,
+    "shadow_depth": 1,
+    "alignment": 2,
+    "margin_v": 50,
+    "highlight_active_word": true
+  }
+}

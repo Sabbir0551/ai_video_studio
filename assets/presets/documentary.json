@@ -1,0 +1,32 @@
+{
+  "name": "documentary",
+  "description": "Slow, cinematic pacing with deep atmospheric narration and elegant captions",
+  "aspect_ratio": "16:9",
+  "fps": 30,
+  "visual": {
+    "ken_burns_enabled": true,
+    "default_transition": "dissolve",
+    "transition_duration": 0.8,
+    "color_grading_preset": "cinematic_warm"
+  },
+  "audio": {
+    "target_lufs": -14.0,
+    "true_peak": -1.0,
+    "music_volume": 0.12,
+    "music_ducking_reduction_db": -14.0,
+    "music_ducking_threshold_db": -24.0
+  },
+  "caption": {
+    "font_name": "Noto Sans Bengali",
+    "font_size": 50,
+    "primary_color": "&H00FFFFFF",
+    "outline_color": "&H00000000",
+    "back_color": "&H80000000",
+    "bold": false,
+    "outline_width": 2,
+    "shadow_depth": 1,
+    "alignment": 2,
+    "margin_v": 45,
+    "highlight_active_word": false
+  }
+}

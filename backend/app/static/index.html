@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="bn" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Video Studio - Personal Production Suite</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Inter:wght@400;600;700&display=swap');
+        body { font-family: 'Inter', 'Hind Siliguri', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased">
+
+    <!-- Top Navigation Header -->
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/20">
+                    <i data-lucide="video" class="w-5 h-5 text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold bg-gradient-to-r from-sky-400 to-indigo-300 bg-clip-text text-transparent">AI Video Studio</h1>
+                    <p class="text-xs text-slate-400">Personal Video Creation & Multimodal Auto-Editor</p>
+                </div>
+            </div>
+
+            <!-- Tabs Navigation -->
+            <nav class="flex space-x-1 bg-slate-800/60 p-1 rounded-xl border border-slate-700/60 text-sm">
+                <button onclick="switchTab('dashboard')" id="tab-dashboard" class="nav-tab px-4 py-1.5 rounded-lg font-medium transition flex items-center gap-2 bg-sky-500 text-white shadow">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i> ড্যাশবোর্ড
+                </button>
+                <button onclick="switchTab('create')" id="tab-create" class="nav-tab px-4 py-1.5 rounded-lg font-medium transition flex items-center gap-2 text-slate-300 hover:text-white">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i> টেক্সট টু ভিডিও
+                </button>
+                <button onclick="switchTab('edit')" id="tab-edit" class="nav-tab px-4 py-1.5 rounded-lg font-medium transition flex items-center gap-2 text-slate-300 hover:text-white">
+                    <i data-lucide="scissors" class="w-4 h-4"></i> অটো-এডিটর (EDL)
+                </button>
+                <button onclick="switchTab('gallery')" id="tab-gallery" class="nav-tab px-4 py-1.5 rounded-lg font-medium transition flex items-center gap-2 text-slate-300 hover:text-white">
+                    <i data-lucide="film" class="w-4 h-4"></i> গ্যালারি
+                </button>
+            </nav>
+
+            <!-- Status Indicator -->
+            <div class="flex items-center space-x-2 text-xs bg-emerald-950/80 border border-emerald-700/50 text-emerald-400 px-3 py-1.5 rounded-full">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span id="system-status">সিস্টেম সক্রিয় (-14 LUFS)</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- ==================== TAB 1: DASHBOARD ==================== -->
+        <section id="view-dashboard" class="space-y-6">
+            <!-- Hero Stats Row -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl relative overflow-hidden">
+                    <div class="text-xs text-slate-400 font-medium">ভিডিও এনকোডার</div>
+                    <div class="text-xl font-bold text-sky-400 mt-1 flex items-center gap-2">
+                        <i data-lucide="cpu" class="w-5 h-5"></i> <span id="dash-encoder">libx264 (CFR)</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 mt-2">ফাস্ট মাল্টি-থ্রেডেড হার্ডওয়্যার মোড</p>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
+                    <div class="text-xs text-slate-400 font-medium">বাংলা ফন্ট ও সাবটাইটেল</div>
+                    <div class="text-xl font-bold text-emerald-400 mt-1 flex items-center gap-2">
+                        <i data-lucide="type" class="w-5 h-5"></i> HarfBuzz + Noto
+                    </div>
+                    <p class="text-[11px] text-slate-500 mt-2">যুক্তাক্ষর ও কার-চিহ্ন ১০০% নির্ভুল</p>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
+                    <div class="text-xs text-slate-400 font-medium">অডিও ব্রডকাস্ট টার্গেট</div>
+                    <div class="text-xl font-bold text-purple-400 mt-1 flex items-center gap-2">
+                        <i data-lucide="volume-2" class="w-5 h-5"></i> -14.0 LUFS
+                    </div>
+                    <p class="text-[11px] text-slate-500 mt-2">সাইডচেইন মিউজিক ডাকিং সহ</p>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
+                    <div class="text-xs text-slate-400 font-medium">রেন্ডার করা ভিডিও</div>
+                    <div class="text-xl font-bold text-amber-400 mt-1 flex items-center gap-2">
+                        <i data-lucide="video" class="w-5 h-5"></i> <span id="dash-render-count">...</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 mt-2">১০৮০p ও ৯:১৬ শর্টস রেডি</p>
+                </div>
+            </div>
+
+            <!-- Quick Action Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                <div onclick="switchTab('create')" class="cursor-pointer group p-6 rounded-2xl bg-gradient-to-br from-slate-900 to-sky-950/40 border border-slate-800 hover:border-sky-500/50 transition">
+                    <div class="w-12 h-12 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center mb-4 group-hover:scale-110 transition">
+                        <i data-lucide="wand-2" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white group-hover:text-sky-300 transition">টেক্সট / স্ক্রিপ্ট থেকে ভিডিও বানান</h3>
+                    <p class="text-sm text-slate-400 mt-1">টপিক বা স্ক্রিপ্ট লিখুন, সিস্টেম মানুষের মতো বাংলা/ইংরেজি ভয়েস, সাবটাইটেল ও কেন বার্নস মোশন সহ ভিডিও তৈরি করে দেবে।</p>
+                    <div class="mt-4 flex items-center text-xs font-semibold text-sky-400 gap-1">
+                        শুরু করুন <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </div>
+                </div>
+
+                <div onclick="switchTab('edit')" class="cursor-pointer group p-6 rounded-2xl bg-gradient-to-br from-slate-900 to-indigo-950/40 border border-slate-800 hover:border-indigo-500/50 transition">
+                    <div class="w-12 h-12 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center mb-4 group-hover:scale-110 transition">
+                        <i data-lucide="scissors" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white group-hover:text-indigo-300 transition">ভিডিও আপলোড ও অটো-এডিট করুন</h3>
+                    <p class="text-sm text-slate-400 mt-1">কাঁচা ভিডিও আপলোড করুন, সিস্টেম ফিলার ওয়ার্ড ও সাইলেন্স কেটে বাদ দেবে এবং জাম্প-কাট স্মুথ করে পেশাদার এডিট দেবে।</p>
+                    <div class="mt-4 flex items-center text-xs font-semibold text-indigo-400 gap-1">
+                        অ্যানালাইসিস শুরু করুন <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Renders Mini Feed -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-bold text-base flex items-center gap-2">
+                        <i data-lucide="clock" class="w-4 h-4 text-sky-400"></i> সাম্প্রতিক আউটপুটসমূহ
+                    </h3>
+                    <button onclick="switchTab('gallery')" class="text-xs text-sky-400 hover:underline">সবগুলো দেখুন</button>
+                </div>
+                <div id="dash-recent-list" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Dynamic Items -->
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ==================== TAB 2: TEXT TO VIDEO WIZARD ==================== -->
+        <section id="view-create" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- Left Form Controls (7 cols) -->
+                <div class="lg:col-span-7 bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-5">
+                    <div>
+                        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                            <i data-lucide="sparkles" class="w-5 h-5 text-sky-400"></i> টেক্সট টু ভিডিও জেনারেটর
+                        </h2>
+                        <p class="text-xs text-slate-400 mt-1">প্রম্পট দিন এবং পছন্দ অনুযায়ী স্টাইল বেছে এক ক্লিকে সম্পূর্ণ ভিডিও তৈরি করুন।</p>
+                    </div>
+
+                    <!-- Prompt Input -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">ভিডিও টপিক বা স্ক্রিপ্ট</label>
+                        <textarea id="create-prompt" rows="4" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-sky-500 transition" placeholder="যেমন: কৃত্রিম বুদ্ধিমত্তা কীভাবে ফ্রিল্যান্সিং ও কাজের ধারা বদলে দিচ্ছে?"></textarea>
+                    </div>
+
+                    <!-- Config Row -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">ভাষা (Language)</label>
+                            <select id="create-lang" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 text-xs text-white">
+                                <option value="bn" selected>বাংলা (bn-BD)</option>
+                                <option value="en">English (en-US)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">ভিডিওর দৈর্ঘ্য (Duration)</label>
+                            <select id="create-duration" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 text-xs text-white">
+                                <option value="30">৩০ সেকেন্ড (Shorts)</option>
+                                <option value="60">১ মিনিট (Standard)</option>
+                                <option value="120" selected>২ মিনিট (১২ সিন / Full Story)</option>
+                                <option value="180">৩ মিনিট (Extended)</option>
+                                <option value="300">৫ মিনিট (Long Form)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">অ্যাসপেক্ট রেশিও</label>
+                            <select id="create-aspect" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 text-xs text-white">
+                                <option value="16:9" selected>16:9 (Landscape)</option>
+                                <option value="9:16">9:16 (Shorts/Reels)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">স্টাইল ও প্রিসেট</label>
+                            <select id="create-preset" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 text-xs text-white">
+                                <option value="cartoon_animation" selected>Pixar 3D Cartoon (কার্টুন)</option>
+                                <option value="clean_corporate">Clean Corporate (এক্সপ্লেইনার)</option>
+                                <option value="short_hype">Short Hype (হাইপ ও SFX)</option>
+                                <option value="documentary">Documentary (প্রামাণ্যচিত্র)</option>
+                                <option value="news_flash">News Flash (নিউজ)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Voice and Character Row -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-800/80">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">ভয়েসের অভিব্যক্তি ও মুড (Voice Acting)</label>
+                            <select id="create-voice-tone" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 text-xs text-white">
+                                <option value="gentle_story" selected>কোমল ও মায়াবী (Gentle Story / Nursery)</option>
+                                <option value="cheerful_cartoon">প্রাণবন্ত ও মিষ্টি (Cheerful Cartoon)</option>
+                                <option value="documentary">গম্ভীর ও প্রামাণ্য (Deep Documentary)</option>
+                                <option value="default">স্বাভাবিক ও প্রাতিষ্ঠানিক (Neutral)</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center gap-2 pt-5">
+                            <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-300">
+                                <input type="checkbox" id="create-char-consistency" checked class="rounded border-slate-700 bg-slate-950 text-sky-500">
+                                <span class="text-sky-300 font-medium">চরিত্রের ধারাবাহিকতা লক করুন (Consistent Seed & Anchor)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Toggles -->
+                    <div class="flex flex-wrap gap-4 pt-2 border-t border-slate-800/80 text-xs text-slate-300">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="create-watermark" checked class="rounded border-slate-700 bg-slate-950 text-sky-500">
+                            <span>ব্র্যান্ড ওয়াটারমার্ক যুক্ত করুন</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="create-preview" class="rounded border-slate-700 bg-slate-950 text-sky-500">
+                            <span>আল্ট্রা-ফাস্ট প্রিভিউ মোড (প্রথম ৩ সিন দ্রুত দেখুন)</span>
+                        </label>
+                    </div>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="create-preview" class="rounded border-slate-700 bg-slate-950 text-sky-500">
+                            <span>আল্ট্রা-ফাস্ট প্রিভিউ মোড (১.৬ সে.)</span>
+                        </label>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button onclick="startCreateVideo()" id="btn-create-submit" class="w-full py-3.5 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-sky-500/20 transition flex items-center justify-center gap-2">
+                        <i data-lucide="play" class="w-4 h-4 fill-current"></i> ভিডিও তৈরি করুন
+                    </button>
+
+                    <!-- Progress status -->
+                    <div id="create-progress" class="hidden space-y-2 p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs">
+                        <div class="flex justify-between font-semibold">
+                            <span id="create-progress-text" class="text-sky-400">প্রসেস শুরু হচ্ছে...</span>
+                            <span class="animate-spin">⏳</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Live Preview Card (5 cols) -->
+                <div class="lg:col-span-5 bg-slate-900 border border-slate-800 p-6 rounded-2xl flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-300 mb-3 flex items-center gap-2">
+                            <i data-lucide="monitor-play" class="w-4 h-4 text-sky-400"></i> লাইভ প্লেয়ার ও রেজাল্ট
+                        </h3>
+                        <div id="create-player-container" class="aspect-video bg-black rounded-xl overflow-hidden flex items-center justify-center border border-slate-800 relative">
+                            <p class="text-xs text-slate-500" id="create-empty-msg">ভিডিও রেন্ডার হলে এখানে প্লে হবে</p>
+                            <video id="create-video-player" controls class="hidden w-full h-full object-contain"></video>
+                        </div>
+
+                        <!-- QA Metrics Pill Grid -->
+                        <div id="create-qa-box" class="hidden mt-4 grid grid-cols-2 gap-2 text-[11px]">
+                            <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+                                <span class="text-slate-400">ডুরেশন:</span> <strong id="qa-dur" class="text-white">...</strong>
+                            </div>
+                            <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+                                <span class="text-slate-400">লাউডনেস:</span> <strong id="qa-lufs" class="text-emerald-400">...</strong>
+                            </div>
+                            <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+                                <span class="text-slate-400">রেজোলিউশন:</span> <strong id="qa-res" class="text-white">...</strong>
+                            </div>
+                            <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+                                <span class="text-slate-400">রেন্ডার স্পিড:</span> <strong id="qa-time" class="text-sky-400">...</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SEO Quick Copy -->
+                    <div id="create-seo-box" class="hidden mt-4 pt-3 border-t border-slate-800 text-xs">
+                        <span class="font-semibold text-slate-300">টাইটেল আইডিয়া:</span>
+                        <p id="seo-title" class="text-slate-400 text-[11px] mt-1 bg-slate-950 p-2 rounded border border-slate-800"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ==================== TAB 3: AUTO-EDITOR & EDL REVIEW ==================== -->
+        <section id="view-edit" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- Controls -->
+                <div class="lg:col-span-5 bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-5">
+                    <div>
+                        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                            <i data-lucide="scissors" class="w-5 h-5 text-indigo-400"></i> ভিডিও অটো-এডিটর
+                        </h2>
+                        <p class="text-xs text-slate-400 mt-1">ফিলার শব্দ ও নীরবতা কেটে জাম্প-কাট স্মুথ করে এক ক্লিকে পেশাদার এডিট পান।</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">ভিডিও সোর্স ফাইল</label>
+                        <select id="edit-video-select" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white">
+                            <option value="data/renders/bangla_demo_mvp.mp4">data/renders/bangla_demo_mvp.mp4 (Sample Bangla Talk)</option>
+                            <option value="data/renders/english_demo_9x16.mp4">data/renders/english_demo_9x16.mp4 (Sample English Short)</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 text-xs">
+                        <div>
+                            <label class="block text-slate-400 mb-1">এডিট গোল (Goal)</label>
+                            <select id="edit-goal" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 text-white">
+                                <option value="talking_head_polish" selected>Talking Head Polish</option>
+                                <option value="tight_short">Tight Short (Fast)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1">কাট অ্যাগ্রিসিভনেস</label>
+                            <select id="edit-agg" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 text-white">
+                                <option value="gentle">Gentle (মৃদু কাট)</option>
+                                <option value="balanced" selected>Balanced (পরিমিত)</option>
+                                <option value="aggressive">Aggressive (টাইট কাট)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap gap-4 text-xs text-slate-300 pt-2 border-t border-slate-800">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="edit-zooms" checked class="rounded border-slate-700 bg-slate-950 text-indigo-500">
+                            <span>১১২% জাম্প-কাট পাঞ্চ জুম</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="edit-captions" checked class="rounded border-slate-700 bg-slate-950 text-indigo-500">
+                            <span>কারাওকে সাবটাইটেল</span>
+                        </label>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex gap-3">
+                        <button onclick="startAnalyzeVideo()" id="btn-analyze" class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-xl text-xs flex items-center justify-center gap-2 transition">
+                            <i data-lucide="scan" class="w-4 h-4"></i> অ্যানালাইসিস করুন
+                        </button>
+                        <button onclick="startAutoEditVideo()" id="btn-edit-render" class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-xs flex items-center justify-center gap-2 transition">
+                            <i data-lucide="check-circle" class="w-4 h-4"></i> এডিট রেন্ডার করুন
+                        </button>
+                    </div>
+
+                    <!-- Edit status -->
+                    <div id="edit-progress" class="hidden p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs text-indigo-400 font-medium">
+                        প্রসেস চলছে...
+                    </div>
+                </div>
+
+                <!-- Right Review Board -->
+                <div class="lg:col-span-7 bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4">
+                    <h3 class="text-sm font-bold text-slate-300 flex items-center gap-2">
+                        <i data-lucide="list-checks" class="w-4 h-4 text-indigo-400"></i> ডিসিশন বোর্ড (Edit Decision List)
+                    </h3>
+
+                    <!-- Before/After Banner -->
+                    <div id="edit-diff-box" class="hidden p-4 rounded-xl bg-slate-950 border border-indigo-500/30 grid grid-cols-3 gap-2 text-center text-xs">
+                        <div>
+                            <span class="text-slate-400">আগের দৈর্ঘ্য:</span>
+                            <div id="diff-orig" class="text-base font-bold text-white mt-0.5">...</div>
+                        </div>
+                        <div>
+                            <span class="text-slate-400">এডিটের পর:</span>
+                            <div id="diff-new" class="text-base font-bold text-indigo-400 mt-0.5">...</div>
+                        </div>
+                        <div>
+                            <span class="text-slate-400">সময় সাশ্রয়:</span>
+                            <div id="diff-saved" class="text-base font-bold text-emerald-400 mt-0.5">...</div>
+                        </div>
+                    </div>
+
+                    <!-- Cut List Container -->
+                    <div id="edl-container" class="space-y-2 max-h-72 overflow-y-auto pr-1 text-xs">
+                        <p class="text-slate-500 text-center py-8">অ্যানালাইসিস বাটনে ক্লিক করলে প্রস্তাবিত কাটের তালিকা এখানে দেখা যাবে</p>
+                    </div>
+
+                    <!-- Output Player for Edit -->
+                    <div id="edit-player-container" class="hidden pt-3 border-t border-slate-800">
+                        <span class="text-xs font-semibold text-emerald-400 flex items-center gap-1 mb-2">
+                            <i data-lucide="check" class="w-3.5 h-3.5"></i> এডিটেড রেজাল্ট রেডি!
+                        </span>
+                        <div class="aspect-video bg-black rounded-xl overflow-hidden">
+                            <video id="edit-video-player" controls class="w-full h-full object-contain"></video>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ==================== TAB 4: GALLERY ==================== -->
+        <section id="view-gallery" class="hidden space-y-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                        <i data-lucide="film" class="w-5 h-5 text-sky-400"></i> রেন্ডার গ্যালারি
+                    </h2>
+                    <p class="text-xs text-slate-400">স্টুডিওতে রেন্ডার হওয়া সব ভিডিও এখানে লাইভ দেখতে ও ডাউনলোড করতে পারেন।</p>
+                </div>
+                <button onclick="loadGallery()" class="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-700 flex items-center gap-1.5">
+                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> রিফ্রেশ
+                </button>
+            </div>
+
+            <div id="gallery-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Dynamically loaded cards -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 py-4 text-center text-xs text-slate-500">
+        AI Video Studio • Self-Hosted Personal Suite • EBU R128 (-14 LUFS) • HarfBuzz Indic Text Engine
+    </footer>
+
+    <!-- App JavaScript Logic -->
+    <script>
+        lucide.createIcons();
+
+        function switchTab(tabId) {
+            document.querySelectorAll('section[id^="view-"]').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-tab').forEach(el => {
+                el.classList.remove('bg-sky-500', 'text-white', 'shadow');
+                el.classList.add('text-slate-300');
+            });
+
+            document.getElementById(`view-${tabId}`).classList.remove('hidden');
+            const activeNav = document.getElementById(`tab-${tabId}`);
+            if (activeNav) {
+                activeNav.classList.remove('text-slate-300');
+                activeNav.classList.add('bg-sky-500', 'text-white', 'shadow');
+            }
+
+            if (tabId === 'gallery' || tabId === 'dashboard') {
+                loadGallery();
+            }
+        }
+
+        async function loadGallery() {
+            try {
+                const res = await fetch('/api/v1/renders');
+                const renders = await res.json();
+
+                document.getElementById('dash-render-count').innerText = renders.length;
+
+                const grid = document.getElementById('gallery-grid');
+                const dashList = document.getElementById('dash-recent-list');
+                grid.innerHTML = '';
+                dashList.innerHTML = '';
+
+                if (renders.length === 0) {
+                    grid.innerHTML = '<p class="col-span-3 text-center text-slate-500 py-12">কোনো রেন্ডার করা ভিডিও পাওয়া যায়নি।</p>';
+                    dashList.innerHTML = '<p class="col-span-3 text-center text-slate-500 py-6">এখনো কোনো ভিডিও তৈরি করা হয়নি।</p>';
+                    return;
+                }
+
+                renders.forEach(item => {
+                    const card = `
+                        <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden hover:border-slate-700 transition flex flex-col justify-between">
+                            <div class="aspect-video bg-black relative flex items-center justify-center">
+                                <video src="${item.url}" controls class="w-full h-full object-contain"></video>
+                            </div>
+                            <div class="p-4 space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold text-white truncate">${item.filename}</span>
+                                    <span class="text-[10px] bg-sky-950 text-sky-400 border border-sky-800 px-2 py-0.5 rounded-full">${item.resolution}</span>
+                                </div>
+                                <div class="flex items-center justify-between text-[11px] text-slate-400">
+                                    <span>ডুরেশন: ${item.duration}s</span>
+                                    <span>লাউডনেস: ${item.lufs} LUFS</span>
+                                </div>
+                                <a href="${item.url}" download class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs flex items-center justify-center gap-1.5 transition">
+                                    <i data-lucide="download" class="w-3.5 h-3.5"></i> ডাউনলোড
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                    grid.insertAdjacentHTML('beforeend', card);
+                    dashList.insertAdjacentHTML('beforeend', card);
+                });
+                lucide.createIcons();
+            } catch (err) {
+                console.error("Gallery load error:", err);
+            }
+        }
+
+        async function startCreateVideo() {
+            const prompt = document.getElementById('create-prompt').value.trim();
+            if (!prompt) {
+                alert('অনুগ্রহ করে ভিডিও টপিক বা স্ক্রিপ্ট লিখুন');
+                return;
+            }
+
+            const btn = document.getElementById('btn-create-submit');
+            const progress = document.getElementById('create-progress');
+            const progText = document.getElementById('create-progress-text');
+
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+            progress.classList.remove('hidden');
+            progText.innerText = 'ধাপ ১/৪: স্ক্রিপ্ট বিশ্লেষণ ও ক্যারেক্টার স্টোরিবোর্ড প্রস্তুত হচ্ছে...';
+
+            const payload = {
+                prompt: prompt,
+                language: document.getElementById('create-lang').value,
+                aspect_ratio: document.getElementById('create-aspect').value,
+                preset_name: document.getElementById('create-preset').value,
+                watermark: document.getElementById('create-watermark').checked,
+                preview: document.getElementById('create-preview').checked,
+                target_duration: parseFloat(document.getElementById('create-duration').value || '60')
+            };
+
+            // Progress ticker
+            const timer1 = setTimeout(() => {
+                progText.innerText = 'ধাপ ২/৪: চরিত্রের ধারাবাহিকতা বজায় রেখে 3D Pixar সিন ইমেজ তৈরি হচ্ছে...';
+            }, 2500);
+            const timer2 = setTimeout(() => {
+                progText.innerText = 'ধাপ ৩/৪: মায়াবী ও রিয়ালিস্টিক ভয়েসওভার এবং লুল্লাবাই ট্র্যাক সিঙ্ক হচ্ছে...';
+            }, 6000);
+            const timer3 = setTimeout(() => {
+                progText.innerText = 'ধাপ ৪/৪: FFmpeg ব্রডকাস্ট রেন্ডারিং ও -14.0 LUFS মাস্টারিং চলছে...';
+            }, 12000);
+
+            try {
+                const res = await fetch('/api/v1/create-video', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                clearTimeout(timer1);
+                clearTimeout(timer2);
+                clearTimeout(timer3);
+                const data = await res.json();
+
+                if (!res.ok) throw new Error(data.detail || 'রেন্ডার ব্যর্থ হয়েছে');
+
+                // Update UI with result
+                const player = document.getElementById('create-video-player');
+                const emptyMsg = document.getElementById('create-empty-msg');
+                emptyMsg.classList.add('hidden');
+                player.classList.remove('hidden');
+                player.src = data.video_url;
+                player.play();
+
+                // QA Box
+                document.getElementById('create-qa-box').classList.remove('hidden');
+                document.getElementById('qa-dur').innerText = data.qa.duration + 's';
+                document.getElementById('qa-lufs').innerText = data.qa.integrated_lufs + ' LUFS';
+                document.getElementById('qa-res').innerText = data.qa.resolution;
+                document.getElementById('qa-time').innerText = data.qa.render_time_seconds + 's';
+
+                // SEO Box
+                if (data.seo_metadata && data.seo_metadata.title_candidates) {
+                    document.getElementById('create-seo-box').classList.remove('hidden');
+                    document.getElementById('seo-title').innerText = data.seo_metadata.title_candidates[0];
+                }
+
+                progText.innerText = '✓ সফলভাবে সম্পন্ন হয়েছে!';
+            } catch (err) {
+                alert('ত্রুটি: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50');
+                setTimeout(() => progress.classList.add('hidden'), 2500);
+            }
+        }
+
+        async function startAnalyzeVideo() {
+            const videoPath = document.getElementById('edit-video-select').value;
+            const btn = document.getElementById('btn-analyze');
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+
+            const container = document.getElementById('edl-container');
+            container.innerHTML = '<p class="text-xs text-indigo-400 py-6 text-center">মাল্টিমোডাল অ্যানালাইসিস চলছে (স্পিচ, সাইলেন্স, শটস)...</p>';
+
+            try {
+                const res = await fetch('/api/v1/analyze-video', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        video_path: videoPath,
+                        language: 'bn',
+                        goal: document.getElementById('edit-goal').value
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'অ্যানালাইসিস ব্যর্থ হয়েছে');
+
+                container.innerHTML = '';
+                if (data.suggested_edits.length === 0) {
+                    container.innerHTML = '<p class="text-xs text-emerald-400 py-6 text-center">কোনো ফিলার শব্দ বা সাইলেন্স পাওয়া যায়নি। ভিডিওটি পরিচ্ছন্ন।</p>';
+                } else {
+                    data.suggested_edits.forEach(e => {
+                        const isCut = e.operation.includes('cut');
+                        const icon = isCut ? 'scissors' : 'zoom-in';
+                        const badgeColor = isCut ? 'bg-red-950 text-red-400 border-red-800' : 'bg-sky-950 text-sky-400 border-sky-800';
+                        container.insertAdjacentHTML('beforeend', `
+                            <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950 border border-slate-800">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[10px] px-2 py-0.5 rounded border ${badgeColor}">${e.operation}</span>
+                                    <span class="text-slate-300">${e.reason}</span>
+                                </div>
+                                <span class="text-slate-400 font-mono text-[11px]">${e.start_time.toFixed(2)}s - ${e.end_time.toFixed(2)}s</span>
+                            </div>
+                        `);
+                    });
+                }
+                lucide.createIcons();
+            } catch (err) {
+                alert('ত্রুটি: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50');
+            }
+        }
+
+        async function startAutoEditVideo() {
+            const videoPath = document.getElementById('edit-video-select').value;
+            const btn = document.getElementById('btn-edit-render');
+            const progress = document.getElementById('edit-progress');
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+            progress.classList.remove('hidden');
+            progress.innerText = 'স্বয়ংক্রিয় এডিট ও রিফ্রেশ রেন্ডারিং চলছে...';
+
+            try {
+                const res = await fetch('/api/v1/edit-video', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        video_path: videoPath,
+                        language: 'bn',
+                        goal: document.getElementById('edit-goal').value,
+                        aggressiveness: document.getElementById('edit-agg').value,
+                        aspect_ratio: '16:9',
+                        punch_zooms: document.getElementById('edit-zooms').checked,
+                        captions: document.getElementById('edit-captions').checked,
+                        music: true
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'এডিট রেন্ডার ব্যর্থ হয়েছে');
+
+                // Diff Box
+                document.getElementById('edit-diff-box').classList.remove('hidden');
+                document.getElementById('diff-orig').innerText = data.comparison.original_duration + 's';
+                document.getElementById('diff-new').innerText = data.comparison.edited_duration + 's';
+                document.getElementById('diff-saved').innerText = `${data.comparison.time_saved_seconds}s (${data.comparison.percent_saved}%)`;
+
+                // Player
+                const playerContainer = document.getElementById('edit-player-container');
+                const player = document.getElementById('edit-video-player');
+                playerContainer.classList.remove('hidden');
+                player.src = data.video_url;
+                player.play();
+
+            } catch (err) {
+                alert('ত্রুটি: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50');
+                progress.classList.add('hidden');
+            }
+        }
+
+        // Initialize
+        loadGallery();
+    </script>
+</body>
+</html>

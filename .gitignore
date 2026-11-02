@@ -1,0 +1,50 @@
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+
+# Python Cache & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment Variables
+.env
+!.env.example
+
+# Database & SQLite
+*.db
+*.sqlite
+*.sqlite3
+
+# OS Specific
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Output Renders & Runtime Projects
+data/projects/*
+!data/projects/.gitkeep
+data/renders/*
+!data/renders/.gitkeep
+data/test_renders/*
+!data/test_renders/.gitkeep
+data/cache/*
+!data/cache/.gitkeep
+data/uploads/*
+!data/uploads/.gitkeep
+data/*.mp3
+data/*.jpg
+data/*.png
+data/*.json
+
+# IDE & Editors
+.vscode/
+.idea/
+*.swp
+*.swo
