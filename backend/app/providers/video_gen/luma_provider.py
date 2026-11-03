@@ -106,3 +106,4 @@ class LumaDreamMachineProvider(VideoGenProvider):
             width=width,
             height=height
         )
+

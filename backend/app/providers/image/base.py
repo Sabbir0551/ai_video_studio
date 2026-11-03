@@ -25,6 +25,7 @@ class ImageGenProvider(ABC):
         query_or_prompt: str,
         output_path: str,
         width: int = 1920,
-        height: int = 1080
+        height: int = 1080,
+        **kwargs
     ) -> ImageGenResult:
         pass

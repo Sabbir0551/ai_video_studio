@@ -42,6 +42,7 @@ data/*.mp3
 data/*.jpg
 data/*.png
 data/*.json
+data/*.mp4
 
 # IDE & Editors
 .vscode/

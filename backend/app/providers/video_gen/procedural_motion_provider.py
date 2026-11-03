@@ -36,9 +36,14 @@ class ProceduralMotionVideoProvider(VideoGenProvider):
         scale_w = int(width * 1.1)
         scale_h = int(height * 1.1)
 
-        # Choose subtle camera motion direction based on motion prompt or hash
+        # Choose camera motion direction and rhythm
         p_lower = motion_prompt.lower()
-        if "zoom" in p_lower or "walk" in p_lower or "arrive" in p_lower:
+        if "bounce" in p_lower or "playful" in p_lower or "splash" in p_lower:
+            # 120 BPM nursery rhythm hop & bounce
+            zoom_expr = "min(zoom+0.0006,1.08)"
+            pan_x = "iw/2-(iw/zoom/2)+sin(on/20)*12"
+            pan_y = "ih/2-(ih/zoom/2)+abs(sin(on/10))*15"
+        elif "zoom" in p_lower or "walk" in p_lower or "arrive" in p_lower:
             zoom_expr = "min(zoom+0.0012,1.15)"
             pan_x = "iw/2-(iw/zoom/2)+sin(on/30)*15"
             pan_y = "ih/2-(ih/zoom/2)"
@@ -51,10 +56,18 @@ class ProceduralMotionVideoProvider(VideoGenProvider):
             pan_x = "iw/2-(iw/zoom/2)+sin(on/40)*10"
             pan_y = "ih/2-(ih/zoom/2)"
 
+        # Atmospheric grading based on scene weather
+        if "rain" in p_lower and "rainbow" not in p_lower:
+            eq_filter = "eq=contrast=1.04:brightness=-0.01:saturation=1.05"
+        elif "rainbow" in p_lower or "sun" in p_lower:
+            eq_filter = "eq=contrast=1.08:brightness=0.03:saturation=1.22"
+        else:
+            eq_filter = "eq=contrast=1.06:brightness=0.01:saturation=1.12"
+
         filter_chain = (
             f"[0:v]scale={scale_w}:{scale_h},"
             f"zoompan=z='{zoom_expr}':x='{pan_x}':y='{pan_y}':d={total_frames}:s={width}x{height}:fps={fps},"
-            f"eq=contrast=1.06:brightness=0.01:saturation=1.12,"
+            f"{eq_filter},"
             f"format=yuv420p[v]"
         )
 

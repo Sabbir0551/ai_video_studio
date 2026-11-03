@@ -230,7 +230,8 @@ class CreateVideoPipeline:
                     query_or_prompt=scene.visual_intent,
                     output_path=sc_img_path,
                     width=width,
-                    height=height
+                    height=height,
+                    scene_number=idx + 1
                 )
 
                 if enable_video_motion:

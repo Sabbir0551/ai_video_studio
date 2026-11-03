@@ -61,6 +61,14 @@ class EdgeTTSProvider(TTSProvider):
         if not voice_id:
             voice_id = self.select_voice(language, content_hint=content_hint or text)
 
+        # Melodic cadence tuning for kids nursery rhymes
+        is_rhyme = any(w in (content_hint + " " + text).lower() for w in [
+            "rhyme", "rain rain", "lalafun", "song", "toddler", "kids", "cocomelon", "গান", "ছড়া", "রাইম"
+        ])
+        if is_rhyme:
+            pitch = pitch or "+6Hz"
+            rate = rate or "+2%"
+
         # Pre-normalize text for natural pronunciation
         clean_text = normalize_bangla_text_for_speech(text) if language.startswith("bn") else text
 
